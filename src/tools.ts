@@ -6,19 +6,13 @@ const g = globalThis as any;
 const registered = (g[kReg] ??= new Set());
 
 const isCloudRun = !!process.env.K_SERVICE;
-const dbConfig = isCloudRun
-  ? {
-      user: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
-      host: `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}` 
-    }
-  : {
+const dbConfig = {
       user: process.env.DB_USER ,
       password: process.env.DB_PASS ,
       database: process.env.DB_NAME ,
       host: process.env.DB_HOST ,
-      port: parseInt(process.env.DB_PORT || '0'),
+      port: parseInt(process.env.DB_PORT || '26257'),
+      ssl: { rejectUnauthorized: true },
     };
 
 const searchDBSchema = {
