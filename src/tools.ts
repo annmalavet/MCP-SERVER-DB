@@ -11,8 +11,8 @@ const dbConfig = {
       password: process.env.DB_PASS ,
       database: process.env.DB_NAME ,
       host: process.env.DB_HOST ,
-      port: parseInt(process.env.DB_PORT || '26257'),
-      ssl: { rejectUnauthorized: true },
+      port: parseInt(process.env.DB_PORT || '8080'),
+      ssl: { rejectUnauthorized: false },
     };
 
 const searchDBSchema = {
