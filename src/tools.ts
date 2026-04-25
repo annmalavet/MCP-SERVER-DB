@@ -68,3 +68,70 @@ registerOnce(
     }
   }
 );
+
+registerOnce(
+  'update_person',
+  {
+    title: 'Update Person',
+    description: 'Updates specific fields for a person record based on their unique email address.',
+    inputSchema: z.object({
+      email: z.string().email().describe('The email address of the person to update (used as the unique identifier).'),
+      person: z.string().optional().describe('The full name of the person.'),
+      subject: z.string().optional().describe('The academic subject.'),
+      major: z.string().optional().describe('The academic major.'),
+      gpa: z.number().min(0).max(4).optional().describe('The GPA (must be between 0.00 and 4.00).'),
+    }),
+  },
+  async (params: any) => {
+    const pool = new pg.Pool(dbConfig);
+    
+    try {
+      const { email, ...updates } = params;
+      const keys = Object.keys(updates);
+      if (keys.length === 0) {
+        return {
+          content: [{ type: 'text', text: 'Error: No update fields provided. Please specify at least one column to change.' }],
+          isError: true,
+        };
+      }
+      const setClause = keys
+        .map((key, index) => `${key} = $${index + 1}`)
+        .join(', ');
+
+      const sql = `
+        UPDATE public.person 
+        SET ${setClause} 
+        WHERE email = $${keys.length + 1}
+        RETURNING id, person, email;
+      `;
+
+      const values = [...Object.values(updates), email];
+      
+      const result = await pool.query(sql, values);
+
+      if (result.rows.length === 0) {
+        return {
+          content: [{ type: 'text', text: `Error: No person found with email "${email}".` }],
+          isError: true,
+        };
+      }
+
+      const updatedPerson = result.rows[0];
+      return {
+        content: [{ 
+          type: 'text', 
+          text: `Success: Updated ${updatedPerson.person} (ID: ${updatedPerson.id}). Fields modified: ${keys.join(', ')}.` 
+        }],
+      };
+
+    } catch (error: any) {
+      console.error('Database error:', error);
+      return {
+        content: [{ type: 'text', text: `Database error: ${error.message}` }],
+        isError: true,
+      };
+    } finally {
+      await pool.end(); 
+    }
+  }
+);
