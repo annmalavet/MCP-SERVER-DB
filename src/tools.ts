@@ -28,8 +28,8 @@ function registerOnce(name: string, meta: any, handler: any) {
 registerOnce(
   'search_database',
   {
-    title: 'Search All People',
-    description: 'Searches for email or major, limit 5 return.',
+    title: 'Search All Student Info',
+    description: 'Search the student academic database by name, email, or major. Returns student ID, GPA, major, and enrollment details',
     inputSchema: searchDBSchema,
   },
   async (params: any) => {
